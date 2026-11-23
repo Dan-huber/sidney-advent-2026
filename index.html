@@ -97,7 +97,7 @@ const TAGS=[,
  [243,452,38,78],[289,450,40,80],[337,448,42,82],[390,446,42,84],[445,446,44,86],[500,445,44,88],
  [245,550,34,60],[290,550,40,82],[338,552,42,84],[391,555,42,84],[445,556,44,88],[500,556,44,90]];
 const test=new URLSearchParams(location.search).has('test');
-let sim=null, opened=new Set(), shown=0;
+let sim=null, opened=new Set(), shown=0, flipped=0; // flipped = gerade aufgeklappter Anhänger
 try{opened=new Set(JSON.parse(localStorage.getItem('adv-opened')||'[]'))}catch(e){}
 const save=()=>{try{localStorage.setItem('adv-opened',JSON.stringify([...opened]))}catch(e){}};
 // Aktueller Tag (Ortszeit des Geräts): Dez = Tag, nach Weihnachten bis Feb alles offen, sonst gesperrt
@@ -109,19 +109,19 @@ for(let n=1;n<=24;n++){const [x,y,w,h]=TAGS[n],b=document.createElement('button'
  Object.assign(b.style,{left:x/5.58+'%',top:y/10+'%',width:w/5.58+'%',height:h/10+'%'});
  b.innerHTML=`<span class="tag"><img alt=""><b>${n}</b></span>`;b.setAttribute('aria-label','Türchen '+n);stage.append(b)}
 function render(){const c=cur();
- stage.querySelectorAll('.door').forEach(b=>{const n=+b.dataset.n,lock=n>c,op=!lock&&opened.has(n),img=b.querySelector('img');
-  b.classList.toggle('locked',lock);b.classList.toggle('open',op);b.classList.toggle('today',n===c&&!op);if(op&&!img.getAttribute('src'))setImg(img,n)});
+ stage.querySelectorAll('.door').forEach(b=>{const n=+b.dataset.n,lock=n>c,op=!lock&&n===flipped,img=b.querySelector('img');
+  b.classList.toggle('locked',lock);b.classList.toggle('open',op);b.classList.toggle('today',n===c&&!opened.has(n));if(op&&!img.getAttribute('src'))setImg(img,n)});
  $('#sub').textContent=c===0?'Noch ein bisschen Geduld …':c<24?`Heute darfst du Türchen ${c} öffnen ✨`:'Frohe Weihnachten! 🎅'}
 let tt;function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('on'),1800)}
 stage.onclick=e=>{const b=e.target.closest('.door');if(!b)return;const n=+b.dataset.n;
  if(n>cur()){const w=wait(n);b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');
   toast(w===1?'Noch 1 Tag – morgen ist es soweit!':`Noch ${w} Tage Geduld`);navigator.vibrate&&navigator.vibrate(30);return}
- if(opened.has(n))return show(n);
- opened.add(n);save();render();setTimeout(()=>show(n),950)};
-function show(n){shown=n;opened.add(n);save();render();setImg($('#big'),n);
+ if(flipped)return;
+ flipped=n;opened.add(n);save();render();setTimeout(()=>show(n),950)};
+function show(n){shown=n;flipped=n;opened.add(n);save();render();setImg($('#big'),n);
  $('#cap').textContent=`Türchen ${n}`+(CAPTIONS[n]?` – ${CAPTIONS[n]}`:'');
  $('#prev').disabled=n<=1;$('#next').disabled=n>=cur();$('#modal').classList.add('on')}
-const hide=()=>$('#modal').classList.remove('on');
+const hide=()=>{$('#modal').classList.remove('on');flipped=0;render()}; // Anhänger klappt wieder zu
 $('#x').onclick=hide;$('#modal').onclick=e=>{if(e.target.id==='modal')hide()};
 $('#prev').onclick=()=>shown>1&&show(shown-1);$('#next').onclick=()=>shown<cur()&&show(shown+1);
 addEventListener('keydown',e=>{if(e.key==='Escape')hide()});
