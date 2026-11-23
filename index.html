@@ -34,6 +34,14 @@ h1{margin:0;font-weight:normal;font-size:6.4cqw;line-height:1.1;color:#ffe0a2;te
 /* warmer Lichtschein auf Raum und Boden */
 #glow{position:absolute;inset:0;pointer-events:none;mix-blend-mode:soft-light;
  background:radial-gradient(ellipse 42% 30% at 12% 70%,#ff8a2a,transparent 70%);animation:flick 1.7s infinite}
+/* Lichterketten an Baum und Kranz */
+#lights{position:absolute;inset:0;pointer-events:none}
+.lt{position:absolute;width:1.5cqw;aspect-ratio:1;border-radius:50%;transform:translate(-50%,-50%);mix-blend-mode:screen;
+ background:radial-gradient(circle,#fff 0,var(--c) 30%,color-mix(in srgb,var(--c) 35%,transparent) 55%,transparent 72%);
+ animation:tw var(--d) ease-in-out var(--o) infinite alternate}
+@keyframes tw{0%{opacity:.12;transform:translate(-50%,-50%) scale(.7)}100%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}}
+.halo{position:absolute;border-radius:50%;transform:translate(-50%,-50%);mix-blend-mode:screen;animation:breathe 3s ease-in-out infinite alternate}
+@keyframes breathe{from{opacity:.45}to{opacity:.9}}
 @keyframes flick{0%{opacity:.55}18%{opacity:.8}33%{opacity:.6}52%{opacity:.95}70%{opacity:.65}86%{opacity:.85}100%{opacity:.55}}
 /* Anhänger: unsichtbare Fläche über dem gemalten Anhänger */
 .door{position:absolute;padding:0;border:0;background:none;font:inherit;color:inherit;cursor:pointer;perspective:400px}
@@ -72,7 +80,7 @@ figcaption{margin-top:14px;font-size:1.25rem;color:#ffe0a2}
 <body>
 <div id="stage">
  <header><h1>Sidneys Adventskalender</h1><p id="sub"></p></header>
- <div id="glow"></div><canvas id="fire"></canvas>
+ <div id="glow"></div><canvas id="fire"></canvas><div id="lights"></div>
 </div>
 <div id="toast"></div>
 <div id="modal"><button id="x" aria-label="Schließen">✕</button><button class="nav" id="prev">‹</button><button class="nav" id="next">›</button>
@@ -127,6 +135,20 @@ if(test){document.body.classList.add('test-mode');const t=document.createElement
  const q=new URLSearchParams(location.search);if(q.has('day')){sim=+q.get('day');$('#tr').value=sim;$('#tv').textContent=sim;
   if(q.has('open'))for(let n=1;n<=sim;n++)if(n<sim)opened.add(n)}}
 render();setInterval(render,60000);document.addEventListener('visibilitychange',render);
+// Lichter an Baum und Kranz (Positionen in Bild-px 558×1000)
+{const L=$('#lights'),R=(a,b)=>a+Math.random()*(b-a),C=['#ffe6a0','#ffd27a','#fff3d0','#ffb347'],CW=['#ffe6a0','#ff6b5a','#ffd27a','#fff3d0'];
+ const dot=(x,y,c,s=1)=>{const e=document.createElement('i');e.className='lt';
+  Object.assign(e.style,{left:x/5.58+'%',top:y/10+'%',width:1.5*s+'cqw'});
+  e.style.setProperty('--c',c);e.style.setProperty('--d',R(.8,2.2)+'s');e.style.setProperty('--o',-R(0,3)+'s');L.append(e)};
+ const halo=(x,y,w,h,c)=>{const e=document.createElement('i');e.className='halo';
+  Object.assign(e.style,{left:x/5.58+'%',top:y/10+'%',width:w/5.58+'%',height:h/10+'%',background:`radial-gradient(closest-side,${c},transparent)`});L.append(e)};
+ halo(198,480,150,300,'#ffc86a40');halo(72,345,130,150,'#ffcf7a30');halo(188,346,40,40,'#fff2b8aa');
+ // Baum: Dreieck Spitze (188,368), unten y 610 von x 158 bis 240 – Lichter in Girlanden-Reihen
+ for(let y=378;y<605;y+=11){const t=(y-368)/242,hw=t*44,cx=196+t*4;
+  for(let k=0,n=Math.max(1,Math.round(hw/9));k<n;k++)dot(cx-hw*.92+(2*hw*.92)*(k+R(.2,.8))/n,y+R(-4,4),C[Math.random()*4|0],R(.8,1.2))}
+ // Kranz: Ring um (72,345)
+ for(let i=0;i<22;i++){const a=i/22*Math.PI*2+R(-.08,.08),r=R(.8,1.05);dot(72+Math.cos(a)*38*r,345+Math.sin(a)*44*r,CW[i%4],R(.8,1.1))}
+ dot(188,346,'#fff6c8',3.2)}
 // Kaminfeuer: aufsteigende Flammen-Partikel
 const fc=$('#fire'),fx=fc.getContext('2d');let FW,FH;
 function fsize(){const r=devicePixelRatio||1;FW=fc.clientWidth;FH=fc.clientHeight;fc.width=FW*r;fc.height=FH*r;fx.setTransform(r,0,0,r,0,0)}
