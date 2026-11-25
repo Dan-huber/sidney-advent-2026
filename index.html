@@ -95,7 +95,7 @@ figcaption{margin-top:14px;font-size:1.25rem;color:#ffe0a2}
 <script>
 (()=>{
 const $=s=>document.querySelector(s), pad=n=>String(n).padStart(2,'0');
-const IMG=n=>`images/final/${pad(n)}.jpg`, PH=n=>`images/platzhalter/${pad(n)}.svg`;
+const EXT=['jpg','gif','png','webp','jpeg','JPG','GIF','PNG'], IMG=(n,e)=>`images/final/${pad(n)}.${e}`, PH=n=>`images/platzhalter/${pad(n)}.svg`;
 const CAPTIONS={}; // optional, z. B. {1:"Unser erster Schnee", 2:"..."}
 // Position der gemalten Anhänger im Bild (558×1000 px): x, y, Breite, Höhe
 const TAGS=[,
@@ -110,7 +110,8 @@ const save=()=>{try{localStorage.setItem('adv-opened',JSON.stringify([...opened]
 // Aktueller Tag (Ortszeit des Geräts): Dez = Tag, nach Weihnachten bis Feb alles offen, sonst gesperrt
 function cur(){if(sim!==null)return sim;const d=new Date(),m=d.getMonth();return m===11?Math.min(d.getDate(),24):m<2?24:0}
 function wait(n){const c=cur();if(sim!==null||c>0)return n-c;const d=new Date();return Math.ceil((new Date(d.getFullYear(),11,1)-d)/864e5)+n-1}
-function setImg(img,n){img.onerror=()=>{img.onerror=null;img.src=PH(n)};img.src=IMG(n)}
+// Probiert der Reihe nach .jpg, .gif (animiert), .png … – sonst Platzhalter
+function setImg(img,n){let i=0;img.onerror=()=>{if(++i<EXT.length)img.src=IMG(n,EXT[i]);else{img.onerror=null;img.src=PH(n)}};img.src=IMG(n,EXT[0])}
 const stage=$('#stage');
 for(let n=1;n<=24;n++){const [x,y,w,h]=TAGS[n],b=document.createElement('button');b.className='door';b.dataset.n=n;
  Object.assign(b.style,{left:x/5.58+'%',top:y/10+'%',width:w/5.58+'%',height:h/10+'%'});
