@@ -71,6 +71,11 @@ body.test-mode .door{outline:1px dashed #0ff8}
 #modal figure{margin:0;text-align:center;max-width:100%}
 #modal img{width:min(88vw,760px);max-width:100%;max-height:78vh;object-fit:contain;border-radius:14px;border:3px solid #d9b77a;box-shadow:0 10px 40px #000a;animation:pop .5s cubic-bezier(.2,1.3,.4,1)}
 @keyframes pop{from{transform:scale(.6) rotate(-4deg);opacity:0}}
+/* Schließen: Bild fliegt zurück in seinen Anhänger */
+#modal.closing{background:transparent;transition:background .5s}
+#modal.closing>button,#modal.closing figcaption{opacity:0;transition:opacity .2s}
+#modal.closing img{animation:none;transform:translate(var(--tx),var(--ty)) scale(var(--s)) rotate(3deg);opacity:.4;
+ transition:transform .5s cubic-bezier(.55,0,.75,.2),opacity .5s ease-in}
 figcaption{margin-top:14px;font-size:1.25rem;color:#ffe0a2}
 .nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:0;background:#ffffff26;color:#fff;font-size:1.4rem}
 #prev{left:8px}#next{right:8px}.nav[disabled]{opacity:.2}
@@ -123,7 +128,13 @@ stage.onclick=e=>{const b=e.target.closest('.door');if(!b)return;const n=+b.data
 function show(n){shown=n;flipped=n;opened.add(n);save();render();setImg($('#big'),n);
  $('#cap').textContent=`Türchen ${n}`+(CAPTIONS[n]?` – ${CAPTIONS[n]}`:'');
  $('#prev').disabled=n<=1;$('#next').disabled=n>=cur();$('#modal').classList.add('on')}
-const hide=()=>{$('#modal').classList.remove('on');flipped=0;render()}; // Anhänger klappt wieder zu
+let closing=false;
+function hide(){const m=$('#modal');if(!m.classList.contains('on')||closing)return;closing=true;
+ const img=$('#big'),a=img.getBoundingClientRect(),b=stage.querySelector(`.door[data-n="${shown}"]`).getBoundingClientRect();
+ img.style.setProperty('--tx',b.left+b.width/2-(a.left+a.width/2)+'px');img.style.setProperty('--ty',b.top+b.height/2-(a.top+a.height/2)+'px');
+ img.style.setProperty('--s',Math.min(b.width/a.width,b.height/a.height));
+ m.classList.add('closing');
+ setTimeout(()=>{m.classList.remove('on','closing');closing=false;flipped=0;render()},500)} // danach klappt der Anhänger zu
 $('#x').onclick=hide;$('#modal').onclick=e=>{if(e.target.id==='modal')hide()};
 $('#prev').onclick=()=>shown>1&&show(shown-1);$('#next').onclick=()=>shown<cur()&&show(shown+1);
 addEventListener('keydown',e=>{if(e.key==='Escape')hide()});
