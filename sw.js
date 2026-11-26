@@ -1,5 +1,5 @@
 // Network-first: immer aktuelle Dateien (z. B. neue Fotos), offline aus dem Cache
-const C='advent-v3',SHELL=['./','index.html','images/scene.jpg','manifest.webmanifest','icons/icon-192.png'];
+const C='advent-v4',SHELL=['./','index.html','images/scene.jpg','manifest.webmanifest','icons/icon-192.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(SHELL)));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});
 self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;
